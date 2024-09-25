@@ -238,14 +238,14 @@ impl CsvWriter for CheckId{
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Extra {
-    dataflow_trace: DataflowTrace,
+    dataflow_trace: serde_json::Value,
     engine_kind: serde_json::Value,
     fingerprint: String,
     is_ignored: bool,
     lines: String,
     message: serde_json::Value,
     metadata: Meta,
-    metavars: Meta,
+    metavars: serde_json::Value,
     severity: serde_json::Value,
     validation_state: serde_json::Value,
 }
@@ -266,13 +266,13 @@ impl CsvWriter for Extra{
             writer.write_field(self.lines.to_string()).unwrap();
             return;
         }
-        self.dataflow_trace.write_data(writer, s_no, args);
+        // self.dataflow_trace.write_data(writer, s_no, args);
         //self.engine_kind.write_data(writer, s_no, args);
         writer.write_field(self.fingerprint.to_string()).unwrap();
         writer.write_field(self.is_ignored.to_string()).unwrap();
         //self.message.write_data(writer, s_no, args);
         self.metadata.write_data(writer, s_no, args);
-        self.metavars.write_data(writer, s_no, args);
+        // self.metavars.write_data(writer, s_no, args);
         //self.severity.write_data(writer, s_no, args);
        // self.validation_state.write_data(writer, s_no, args);
     }
