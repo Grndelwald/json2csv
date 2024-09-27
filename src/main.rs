@@ -238,7 +238,7 @@ impl CsvWriter for CheckId{
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Extra {
-    dataflow_trace: Option<serde_json::Value>,
+    dataflow_trace: Option<DataflowTrace>,
     engine_kind: serde_json::Value,
     fingerprint: String,
     is_ignored: bool,
