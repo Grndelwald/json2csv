@@ -238,16 +238,16 @@ impl CsvWriter for CheckId{
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Extra {
-    dataflow_trace: serde_json::Value,
+    dataflow_trace: Option<serde_json::Value>,
     engine_kind: serde_json::Value,
     fingerprint: String,
     is_ignored: bool,
     lines: String,
     message: serde_json::Value,
-    metadata: Meta,
-    metavars: serde_json::Value,
-    severity: serde_json::Value,
-    validation_state: serde_json::Value,
+    metadata: Option<Meta>,
+    metavars: Option<serde_json::Value>,
+    severity: Option<serde_json::Value>,
+    validation_state: Option<serde_json::Value>,
 }
 
 impl CsvWriter for Extra{
