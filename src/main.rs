@@ -18,6 +18,8 @@ struct Args{
     debug: bool,
     #[arg(short,long)]
     output_path: Option<String>,
+    #[arg(short,long)]
+    mode: Option<String>,
 }
 trait CsvWriter{
     fn write_data(&self, writer: &mut Writer<File>, s_no: u64, args: &Args);
@@ -36,7 +38,7 @@ pub struct Welcome {
 
 impl CsvWriter for Welcome{
     fn write_data(&self, writer: &mut Writer<File>, mut s_no: u64, args: &Args) {
-        if args.debug == false {
+        if args.mode.as_ref().unwrap().as_str() == "sast" {
             for i in &self.results {
                 writer.write_field(s_no.to_string()).unwrap();
                 i.write_data(writer,s_no,args);
@@ -206,7 +208,7 @@ pub struct Result {
 
 impl CsvWriter for Result{
     fn write_data(&self, writer: &mut Writer<File>, mut s_no: u64, args: &Args) {
-        if args.debug == false {
+        if args.mode.as_ref().unwrap().as_str() == "sast" {
             //self.check_id.write_data(writer, s_no, args);
             if let serde_json::Value::String(x) = &self.check_id {
                 writer.write_field(x.to_string()).unwrap();
@@ -252,9 +254,9 @@ pub struct Extra {
 
 impl CsvWriter for Extra{
     fn write_data(&self, writer: &mut Writer<File>, mut s_no: u64, args: &Args) {
-        if args.debug == false {
+        if args.mode.as_ref().unwrap().as_str() == "sast" {
             // self.severity.write_data(writer, s_no, args);
-            if let serde_json::Value::String(x) = &self.severity {
+            if let Some(serde_json::Value::String(x)) = &self.severity {
                 writer.write_field(x.to_string()).unwrap();
             }
             match &self.message {
@@ -271,7 +273,7 @@ impl CsvWriter for Extra{
         writer.write_field(self.fingerprint.to_string()).unwrap();
         writer.write_field(self.is_ignored.to_string()).unwrap();
         //self.message.write_data(writer, s_no, args);
-        self.metadata.write_data(writer, s_no, args);
+        // self.metadata.write_data(writer, s_no, args);
         // self.metavars.write_data(writer, s_no, args);
         //self.severity.write_data(writer, s_no, args);
        // self.validation_state.write_data(writer, s_no, args);
@@ -507,11 +509,15 @@ impl CsvWriter for ValidationState{
 fn main() {
     let args = Args::parse();
     if args.file.is_none() {
-        println!("Please provide the json file");
+        println!("Error: Please provide the json file");
         std::process::exit(1);
     }
     if args.output_path.is_none() {
-        println!("Please provide the output file name");
+        println!("Error: Please provide the output file name");
+        std::process::exit(1);
+    }
+    if args.mode.is_none() {
+        println!("Error: Please specify SAST, SCA or SECRET");
         std::process::exit(1);
     }
     let mut json_data: String = std::fs::read_to_string(args.file.as_ref().unwrap().as_str()).unwrap();
@@ -520,15 +526,29 @@ fn main() {
     let mut writer = WriterBuilder::new()
     .flexible(true)
     .from_path(args.output_path.as_ref().unwrap().as_str()).unwrap();
-    writer.write_record(&[
-        "Sno",
-        "Rule id",
-        "Severity",
-        "Message",
-        "Vulnerable Snippet",
-        "Path",
-        "Line Number",
-    ]).unwrap();
+    let first_row = match args.mode.as_ref().unwrap().as_str() {
+        "sast" => {
+            [
+                "Sno",
+                "Rule ID",
+                "Severity",
+                "Message",
+                "Vulnerable Snippet",
+                "Path",
+                "Line Number",
+            ]
+        },
+        "sca" => {
+            panic!("Error: Not Implemented Yet");
+        },
+        "secret" => {
+            panic!("Error: Not Implemented Yet");
+        },
+        _ => {
+            panic!("Error: Unknown Mode");
+        },
+    };
+    writer.write_record(&first_row).unwrap();
     let mut s_no = 0 as u64;
     data.write_data(&mut writer, s_no, &args);
 
