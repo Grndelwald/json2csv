@@ -14,12 +14,16 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Args{
+    /// Input JSON file path
     #[arg(short,long)]
     file: Option<String>,
+    ///For debug purpose
     #[arg(short,long, default_value_t = false)]
     debug: bool,
+    ///Output CSV file path
     #[arg(short,long)]
     output_path: Option<String>,
+    ///Specify the mode sast, sca or secret
     #[arg(short,long)]
     mode: Option<String>,
 }
