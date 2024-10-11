@@ -5,6 +5,8 @@ use serde::{
     Serialize,
     Deserialize
 };
+
+use std::collections::HashMap;
 // use serde_json::Result;
 use std::path::PathBuf;
 use clap::{Parser, Subcommand};
@@ -22,6 +24,9 @@ struct Args{
     mode: Option<String>,
 }
 trait CsvWriter{
+    /**
+     * A trait that is implemented by all the JSON nodes to write its correspoding data into to the csv file.
+     */
     fn write_data(&self, writer: &mut Writer<File>, s_no: u64, args: &Args);
 }
 
@@ -188,8 +193,59 @@ impl CsvWriter for Span{
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+struct Skipped{
+    path: String,
+    reason: String,
+}
+
+impl CsvWriter for Skipped{
+    fn write_data(&self, writer: &mut Writer<File>, s_no: u64, args: &Args) {
+        
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Policy{
+    id: i64,
+    name: String,
+    slug: String,
+}
+
+impl CsvWriter for Policy{
+    fn write_data(&self, writer: &mut Writer<File>, s_no: u64, args: &Args) {
+        
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Rule{
+    origin: Option<String>,
+    rule_id: String,
+    url: String,
+    version_id: String,
+}
+
+impl CsvWriter for Rule {
+    fn write_data(&self, writer: &mut Writer<File>, s_no: u64, args: &Args) {
+        
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct SemgrepDev{
+    rule: Rule
+}
+
+impl CsvWriter for SemgrepDev{
+    fn write_data(&self, writer: &mut Writer<File>, s_no: u64, args: &Args) {
+        
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Paths {
     scanned: Vec<String>,
+    skipped: Option<Vec<Skipped>>,
 }
 
 impl CsvWriter for Paths{
@@ -239,6 +295,14 @@ impl CsvWriter for CheckId{
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+struct MetaVars{
+    abstract_content: Option<String>,
+    end: Option<End>,
+    propagated_value: Option<PropagatedValue>,
+    start: Option<End>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Extra {
     dataflow_trace: Option<DataflowTrace>,
     engine_kind: serde_json::Value,
@@ -247,7 +311,7 @@ pub struct Extra {
     lines: String,
     message: serde_json::Value,
     metadata: Option<Meta>,
-    metavars: Option<serde_json::Value>,
+    metavars: Option<MetaVars>,
     severity: Option<serde_json::Value>,
     validation_state: Option<serde_json::Value>,
 }
@@ -469,13 +533,96 @@ impl  CsvWriter for Message{
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub enum List<T>{
+    Single(T),
+    List(Vec<T>),
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Meta {
+    categoru: Option<String>,
+    confidence: Option<String>,
+    cve: Option<List<String>>,
+    cwe: Option<Vec<String>>,
+    #[serde(rename = "cwe2020-top25")]
+    cwe2020_top25: Option<bool>,
+    #[serde(rename = "cwe2021-top25")]
+    cwe2021_top25: Option<bool>,
+    #[serde(rename = "cwe2022-top25")]
+    cwe2022_top25: Option<bool>,
+    ghsa: Option<Vec<String>>,
+    impact: Option<String>,
+    likelihood: Option<String>,
+    #[serde(rename = "publish-date")]
+    publish_date: Option<String>,
+    #[serde(rename = "dev.semgrep.actions")]
+    dev_semgrep_actions: Option<Vec<String>>,
+    #[serde(rename = "dev.semgrep.validation-state-actions")]
+    dev_semgrep_validation_state_actions: Option<Vec<String>>,
+    #[serde(rename = "semgrep.policy")]
+    semgrep_policy: Option<Policy>,
+    #[serde(rename = "semgrep.ruleset")]
+    semgrep_ruleset: Option<Vec<String>>,
+    #[serde(rename = "semgrep.ruleset_id")]
+    semgrep_ruleset_id: Option<i64>,
+    #[serde(rename = "semgrep.url")]
+    semgrep_url: Option<String>,
+    #[serde(rename = "semgrep.dev")]
+    semgrep_dev: Option<SemgrepDev>,
+    subcategory: Option<Vec<String>>,
+    supersedes: Option<Vec<String>>,
+    license: Option<String>,
+    masvs: Option<String>,
+    #[serde(rename = "owasp-mobile")]
+    owasp_mobile: Option<List<String>>,
+    owasp: Option<Vec<String>>,
+    product: Option<String>,
+    references: Option<Vec<String>>,
+    secret_type: Option<String>,
+    shortlink: Option<String>,
+    source: Option<String>,
+    #[serde(rename = "source-rule-url")]
+    source_rule_url: Option<List<String>>,
+    #[serde(rename = "sca-fix-versions")]
+    sca_fix_versions: Option<List<HashMap<String,String>>>,
+    #[serde(rename = "sca-kind")]
+    sca_kind: Option<String>,
+    #[serde(rename = "sca-legacy-identifier")]
+    sca_legacy_identifier: Option<String>,
+    #[serde(rename = "sca-schema")]
+    sca_schema: Option<i64>,
+    #[serde(rename = "sca-severity")]
+    sca_severity: Option<String>,
+    #[serde(rename = "vulnerability-class")]
+    vulnerability_class: Option<List<String>>,
+    #[serde(rename = "sca-vuln-database-identifier")]
+    sca_vuln_database_identifier: Option<String>,
+    technology: Option<Vec<String>>,
+    tags: Option<Vec<String>>,
+    author: Option<String>,
+    asvs: Option<Asvs>,
+
 }
 
 impl CsvWriter for Meta{
     fn write_data(&self, writer: &mut Writer<File>, mut s_no: u64, args: &Args) {
         
     }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct PropagatedValue{
+    svalue_abstract_content: Option<String>,
+    svalue_end: Option<End>,
+    svalue_start: Option<End>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Asvs{
+    control_id: Option<String>,
+    control_url: Option<String>,
+    section: Option<String>,
+    version: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
