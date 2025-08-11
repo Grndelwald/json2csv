@@ -243,7 +243,7 @@ pub struct Extra {
     dataflow_trace: Option<DataflowTrace>,
     engine_kind: serde_json::Value,
     fingerprint: String,
-    is_ignored: bool,
+    is_ignored: Option<bool>,
     lines: String,
     message: serde_json::Value,
     metadata: Option<Meta>,
